@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculate Total Time</title>
+    <script>
+        function calculateTotalTime(bottleSizes, tapForces, walkTimePerPerson) {
+            if (!Array.isArray(bottleSizes)) {
+                throw new Error("Invalid input: bottleSizes must be an array");
+            }
+            if (!Array.isArray(tapForces) || tapForces.length === 0) {
+                throw new Error("Invalid input: tapForces must be a non-empty array");
+            }
+
+            let taps = new Array(tapForces.length).fill(0);
+            let queueLength = bottleSizes.length;
+
+            for (let i = 0; i < queueLength; i++) {
+                let earliestTapIndex = taps.indexOf(Math.min(...taps));
+                let fillTime = bottleSizes[i] / tapForces[earliestTapIndex];
+                if (isNaN(fillTime)) {
+                    throw new Error(`Invalid bottle size`);
+                }
+                if (i >= tapForces.length) {
+                    taps[earliestTapIndex] += fillTime + walkTimePerPerson;
+                } else {
+                    taps[earliestTapIndex] += fillTime;
+                }
+            }
+            return Math.max(...taps);
+        }
+
+        function getInputsAndCalculate() {
+            const bottleSizesInput = document.getElementById("bottleSizes").value;
+            const numberOfTapsInput = document.getElementById("numberOfTaps").value;
+            const tapForcesInput = document.getElementById("tapForces").value;
+
+            let bottleSizes = bottleSizesInput.split(',').map(Number);
+            let numberOfTaps = parseInt(numberOfTapsInput);
+            let tapForces = tapForcesInput.split(',').map(Number);
+            let walkTimePerPerson = 3;
+
+            try {
+                const isValidBottleSize = bottleSizes.every(size => Number.isInteger(size) && size > 0);
+                if (!isValidBottleSize) {
+                    alert("Invalid input: All bottle sizes must be positive integers.");
+                    return;
+                }
+
+                if (!Number.isInteger(numberOfTaps) || numberOfTaps <= 0 || numberOfTaps.toString() !== numberOfTapsInput.trim()) {
+                    alert("Invalid input: The number of taps must be a positive integer.");
+                    return;
+                }
+
+                const isValidTapForces = tapForces.length === numberOfTaps && tapForces.every(force => Number.isInteger(force) && force > 0);
+                if (!isValidTapForces) {
+                    alert("Invalid input: All tap forces must be positive integers and match the number of taps.");
+                    return;
+                }
+
+                let totalTime = calculateTotalTime(bottleSizes, tapForces, walkTimePerPerson);
+                document.getElementById("result").innerText = "Total time required for all people to fill their water bottles is: " + totalTime.toFixed(1) + " seconds.";
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Calculate Total Time for Filling Water Bottles</h1>
+    <div>
+        <label for="bottleSizes">Enter the bottle sizes in ml, separated by commas (e.g., 400,750,1000):</label>
+        <input type="text" id="bottleSizes" />
+    </div>
+    <div>
+        <label for="numberOfTaps">Enter the number of taps:</label>
+        <input type="text" id="numberOfTaps" />
+    </div>
+    <div>
+        <label for="tapForces">Enter the forces of the taps in ml/sec, separated by commas (e.g., 100,50,300):</label>
+        <input type="text" id="tapForces" />
+    </div>
+    <div>
+        <button onclick="getInputsAndCalculate()">Calculate</button>
+    </div>
+    <h2 id="result"></h2>
+</body>
+</html>
